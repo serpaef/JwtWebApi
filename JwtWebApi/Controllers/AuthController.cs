@@ -25,9 +25,14 @@ namespace JwtWebApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDTO req)
         {
-            if(user.Username != req.Username)
+            if (user.Username != req.Username)
             {
                 return BadRequest("User not found.");
+            }
+
+            if (!VerifyPwdHash(req.Password, user.PasswordHash, user.PasswordSalt))
+            {
+                return BadRequest("Wrong Password");
             }
 
             return Ok("TOKEN");
@@ -39,6 +44,15 @@ namespace JwtWebApi.Controllers
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        private bool VerifyPwdHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using(var hmac = new HMACSHA512(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return computedHash.SequenceEqual(passwordHash);
             }
         }
 
