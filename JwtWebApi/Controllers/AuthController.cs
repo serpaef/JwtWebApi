@@ -22,6 +22,17 @@ namespace JwtWebApi.Controllers
             return Ok(user);
         }
 
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> Login(UserDTO req)
+        {
+            if(user.Username != req.Username)
+            {
+                return BadRequest("User not found.");
+            }
+
+            return Ok("TOKEN");
+        }
+
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using(var hmac = new HMACSHA512())
